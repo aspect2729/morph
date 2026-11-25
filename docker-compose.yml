@@ -1,0 +1,45 @@
+# Morph on a server: the app + Caddy (automatic HTTPS from Let's Encrypt).
+#   1. copy .env.example to .env and set DOMAIN
+#   2. docker compose up -d --build
+services:
+  morph:
+    build: .
+    image: morph:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MORPH_MODE: web
+      MORPH_DATA: /data
+    volumes:
+      - morph-data:/data
+    expose:
+      - "8000"
+    mem_limit: ${MORPH_MEMORY:-8g}
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    depends_on:
+      morph:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      MAX_UPLOAD_MB: ${MORPH_MAX_UPLOAD_MB:-100}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  morph-data:
+  caddy-data:
+  caddy-config:

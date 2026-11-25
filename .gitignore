@@ -1,0 +1,14 @@
+.venv/
+.work/
+__pycache__/
+.morph.log
+macos/build/
+library/
+.antideploy-last.json
+.env
+
+# build outputs
+/build/
+/dist/
+# local tooling
+.claude/

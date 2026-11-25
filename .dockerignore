@@ -1,0 +1,12 @@
+.venv
+.work
+library
+macos
+**/__pycache__
+*.pyc
+.morph.log
+.launcher.log
+Morph.command
+setup.sh
+.git
+.DS_Store

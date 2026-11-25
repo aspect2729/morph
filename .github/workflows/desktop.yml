@@ -1,0 +1,106 @@
+# Builds the Morph desktop app for macOS (Apple Silicon + Intel) and Windows, checks each build by running
+# its engine headless against the smoke test, and publishes the zips as a GitHub release.
+#   - push a tag like v1.0.0   -> build + test + release
+#   - Actions tab "Run workflow" -> build + test only (zips kept as workflow artifacts)
+name: Desktop app
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mac:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14          # Apple Silicon; built on macOS 14 so it runs on 14+
+            zip: Morph-mac-apple-silicon.zip
+          - runner: macos-15-intel    # Intel Macs
+            zip: Morph-mac-intel.zip
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Engines (Homebrew)
+        run: brew install tesseract ffmpeg pandoc dylibbundler
+      - name: Python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.lock -r desktop/requirements-desktop.txt
+      - name: Build
+        env: { LO_DOWNLOAD: "1", PYTHON: python }
+        run: ./desktop/build_mac.sh
+      - name: Smoke test the built app
+        run: |
+          dist/Morph.app/Contents/MacOS/Morph --serve 7788 > serve.log 2>&1 &
+          for i in $(seq 1 120); do curl -fs http://127.0.0.1:7788/api/health && break; sleep 2; done
+          cat serve.log
+          python scripts/smoke_test.py http://127.0.0.1:7788
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.zip }}
+          path: dist/${{ matrix.zip }}
+          compression-level: 0
+          retention-days: 7
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.lock -r desktop/requirements-desktop.txt
+      - name: Build
+        shell: pwsh
+        run: ./desktop/build_windows.ps1
+      - name: Smoke test the built app
+        shell: pwsh
+        run: |
+          Start-Process -FilePath "dist\Morph\Morph.exe" -ArgumentList "--serve","7788"
+          for ($i = 0; $i -lt 120; $i++) {
+            try { Invoke-WebRequest http://127.0.0.1:7788/api/health -UseBasicParsing | Out-Null; break } catch { Start-Sleep 2 }
+          }
+          python scripts/smoke_test.py http://127.0.0.1:7788
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Morph-windows.zip
+          path: dist/Morph-windows.zip
+          compression-level: 0
+          retention-days: 7
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [mac, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: out, merge-multiple: true }
+      - name: Publish release
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          ls -la out
+          gh release create "${GITHUB_REF_NAME}" out/*.zip --repo "${GITHUB_REPOSITORY}" \
+            --title "Morph ${GITHUB_REF_NAME}" --notes-file - <<'EOF'
+          Morph for your computer — convert anything and edit any PDF, entirely offline.
+
+          | Download | For |
+          |---|---|
+          | **Morph-mac-apple-silicon.zip** | Macs with M1/M2/M3/M4 chips (macOS 14 or newer) |
+          | **Morph-mac-intel.zip** | Intel Macs (macOS 15 or newer) |
+          | **Morph-windows.zip** | Windows 10/11, 64-bit |
+
+          **First launch (the app isn't signed yet):**
+          - **Mac:** unzip, drag Morph to Applications, open it. If macOS says it can't be opened: System Settings → Privacy & Security → *Open Anyway*.
+          - **Windows:** unzip the whole folder, open `Morph.exe`. If SmartScreen appears: *More info* → *Run anyway*.
+          EOF

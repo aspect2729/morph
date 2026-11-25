@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Morph</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><circle cx='5' cy='5' r='4' fill='%23ff3b30'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Space+Mono:wght@400;700&family=Inter+Tight:wght@400;500;600&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="editor.css">
+</head>
+<body class="dotgrid">
+
+<header class="top">
+  <div class="brand"><span class="rec"></span>MORPH <small>/ 02</small></div>
+  <nav class="nav" id="nav">
+    <span class="pill"></span>
+    <button data-v="convert"><svg class="i" data-i="convert"></svg><span>Convert</span></button>
+    <button data-v="edit"><svg class="i" data-i="pen"></svg><span>Edit PDF</span></button>
+  </nav>
+  <div class="right">
+    <span class="status mono" id="status"><i></i><span>Starting</span></span>
+    <button class="ib" id="theme" title="Toggle light / dark"><svg class="i" data-i="moon"></svg></button>
+  </div>
+</header>
+
+<!-- ============================================================ CONVERT -->
+<section class="view" id="v-convert">
+  <div class="wrap">
+    <div class="hero">
+      <h1>MORPH<em>.</em></h1>
+      <p>Drop <b>anything</b>. Get it back in <b>any format</b> — or open it in the editor. <span id="wherenote">Everything runs <b>on this Mac</b>.</span></p>
+    </div>
+    <div class="stats mono"><span><b>60+</b> formats</span><span id="stat2"><b>7</b> engines</span><span id="stat3"><b>0</b> uploads</span></div>
+
+    <label class="drop" id="drop">
+      <input type="file" id="file" multiple>
+      <div class="orb"><svg class="i" data-i="plus" style="width:24px;height:24px"></svg></div>
+      <div>
+        <div class="drop-t">Drop files, or click to choose</div>
+        <div class="sub mono">Paste works too · ⌘V</div>
+      </div>
+      <div class="kinds">
+        <span>Word</span><span>Excel</span><span>PowerPoint</span><span>PDF</span><span>Keynote</span><span>Pages</span>
+        <span>Numbers</span><span>Images</span><span>HEIC</span><span>SVG</span><span>Audio</span><span>Video</span>
+        <span>Markdown</span><span>EPUB</span><span>CSV</span><span>JSON</span>
+      </div>
+    </label>
+
+    <div class="features" id="features">
+      <div class="feat" data-go="convert-pick"><span class="n">01</span><svg class="i arr" data-i="arrow"></svg>
+        <h3>Convert anything</h3><p>Office, PDF, images, audio, video and data — into any format, in seconds.</p></div>
+      <div class="feat" data-go="edit"><span class="n">02</span><svg class="i arr" data-i="arrow"></svg>
+        <h3>Edit any PDF</h3><p>Change text — even inside scans and photos — sign, highlight, redact, reorder pages.</p></div>
+      <div class="feat" data-go="convert-pick"><span class="n">03</span><svg class="i arr" data-i="arrow"></svg>
+        <h3>Read any scan</h3><p>OCR pulls the text out of scanned pages and photos — as a searchable PDF or plain text.</p></div>
+    </div>
+
+    <div id="listwrap" hidden>
+      <div class="bar">
+        <span class="mono" id="count" style="color:var(--dim)">0 files</span>
+        <div class="acts">
+          <div class="allto" id="allto"></div>
+          <button class="btn sm" id="all"><svg class="i" data-i="bolt"></svg>Convert all</button>
+          <button class="btn sm" id="zipall" hidden><svg class="i" data-i="down"></svg>Download all</button>
+          <button class="btn sm" id="clear">Clear</button>
+        </div>
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+
+    <footer class="eng mono"><div class="e" id="eng"></div><div id="privacy">Files auto-delete after 2h</div></footer>
+  </div>
+</section>
+
+<!-- ============================================================ EDITOR -->
+<section class="view" id="v-edit">
+  <div class="ed" id="ed">
+    <div class="ed-top">
+      <div class="doc-name">
+        <button class="ib back" id="edback" title="Back to Home"><svg class="i" data-i="back"></svg></button>
+        <input id="docname" value="Untitled" spellcheck="false">
+        <span class="dirty" id="dirty" title="Unsaved changes"></span>
+      </div>
+      <div class="tools" id="tools"></div>
+      <div class="ed-acts">
+        <button class="ib" id="undo" title="Undo ⌘Z"><svg class="i" data-i="undo"></svg></button>
+        <button class="ib" id="redo" title="Redo ⇧⌘Z"><svg class="i" data-i="redo"></svg></button>
+        <div class="split">
+          <button class="btn red" id="save"><svg class="i" data-i="down"></svg><span>Save<span class="lg"> PDF</span></span></button>
+          <button class="btn red more" id="savemore" title="Export as…"><svg class="i" data-i="chev"></svg></button>
+          <div class="menu" id="savemenu">
+            <button data-f="pdf"><b>PDF</b><span>Edited document</span></button>
+            <button data-f="docx"><b>Word</b><span>Editable .docx</span></button>
+            <button data-f="png"><b>Images</b><span>PNG per page</span></button>
+            <button data-f="txt"><b>Text</b><span>Plain .txt</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="thumbs" id="thumbs">
+      <div class="th-list" id="thlist"></div>
+      <div class="th-add">
+        <button class="btn sm" id="addpages"><svg class="i" data-i="plus"></svg>Add file</button>
+        <button class="btn sm" id="addblank"><svg class="i" data-i="page"></svg>Blank</button>
+      </div>
+    </aside>
+
+    <main class="canvas dotgrid" id="canvas">
+      <div class="pages" id="pages"></div>
+      <section class="ed-home" id="edhome">
+        <div class="eh-top">
+          <div>
+            <h2>EDIT PDF<em>.</em></h2>
+            <p>Change text — even in scans and photos — sign, highlight, redact and rearrange pages.</p>
+          </div>
+          <label class="eh-open" id="edempty">
+            <span class="orb"><svg class="i" data-i="plus"></svg></span>
+            <span><b>Open a file</b><small class="mono">PDF, scan, photo or Office file</small></span>
+          </label>
+        </div>
+        <div class="eh-recent">
+          <div class="eh-bar">
+            <span class="mono">Recent</span>
+            <label class="eh-search" id="ehsearchwrap" hidden><svg class="i" data-i="search"></svg><input id="ehsearch" placeholder="Search" spellcheck="false"></label>
+          </div>
+          <div class="eh-grid" id="ehgrid"></div>
+          <div class="eh-none" id="ehnone" hidden>
+            <p>Files you open here appear in Recent, so you can pick up where you left off.</p>
+          </div>
+        </div>
+      </section>
+      <input type="file" id="edfile" multiple accept=".pdf,image/*,.heic,.doc,.docx,.odt,.rtf,.pages,.ppt,.pptx,.key,.odp,.xls,.xlsx,.numbers,.ods,.csv,.md,.html,.txt,.svg">
+      <input type="file" id="imgfile" accept="image/*,.heic">
+    </main>
+
+    <aside class="insp" id="insp"></aside>
+
+    <div class="zoom" id="zoombar">
+      <button class="ib" id="zout" title="Zoom out"><svg class="i" data-i="minus"></svg></button>
+      <button class="zv mono" id="zval" title="Fit width">100%</button>
+      <button class="ib" id="zin" title="Zoom in"><svg class="i" data-i="plus"></svg></button>
+      <span class="sep"></span>
+      <span class="mono pgind" id="pgind">— / —</span>
+      <button class="ib opts" id="inspbtn" title="Tool options" aria-expanded="false"><svg class="i" data-i="sliders"></svg></button>
+    </div>
+    <div class="busy" id="busy"><div class="dots indet" id="busydots"></div><span class="mono" id="busymsg">Working</span></div>
+  </div>
+
+  <div class="modal" id="sigmodal">
+    <div class="sheet">
+      <div class="sheet-h"><h3>Your signature</h3><button class="x" id="sigclose"><svg class="i" data-i="x"></svg></button></div>
+      <div class="segs" id="sigmode"><button class="on" data-m="draw">Draw</button><button data-m="type">Type</button></div>
+      <canvas id="sigpad" width="1040" height="340"></canvas>
+      <input id="sigtext" placeholder="Type your name" hidden>
+      <div class="sheet-f">
+        <div class="sw" id="sigcolors"></div>
+        <span style="flex:1"></span>
+        <button class="btn" id="sigclear">Clear</button>
+        <button class="btn red" id="sigok">Place signature</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="toasts"></div>
+<script src="app.js"></script>
+<script src="convert.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>
