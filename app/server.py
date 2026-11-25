@@ -516,8 +516,7 @@ def pdf_save(request: Request, sid: str, req: SaveReq):
 
 # ---- desktop app downloads: /download/<mac|mac-intel|windows> -> latest GitHub release file
 _REPO = "https://github.com/aspect2729/morph"
-_DOWNLOADS = {"mac": "Morph-mac-apple-silicon.dmg", "mac-intel": "Morph-mac-intel.dmg",
-              "windows": "Morph-windows-setup.exe"}
+_DOWNLOADS = {"mac": "Morph-mac-apple-silicon.dmg", "windows": "Morph-windows-setup.exe"}
 _dl_seen: dict[str, tuple[bool, float]] = {}
 
 

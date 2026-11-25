@@ -31,8 +31,16 @@ Expand-Archive "$BUILD\pandoc.zip" "$BUILD\pandoc"
 Copy-Item (Get-ChildItem "$BUILD\pandoc" -Recurse -Filter pandoc.exe | Select-Object -First 1).FullName "$ENG\bin\"
 
 Write-Host "==> Tesseract (UB Mannheim build, installed silently, then copied)"
-choco install tesseract -y --no-progress | Out-Null
 $TS = "C:\Program Files\Tesseract-OCR"
+for ($i = 1; $i -le 2 -and -not (Test-Path "$TS\tesseract.exe"); $i++) { choco install tesseract -y --no-progress | Out-Null }
+if (-not (Test-Path "$TS\tesseract.exe")) {
+  # Chocolatey's mirror is flaky: fall back to the official UB Mannheim installer on GitHub
+  $rel = Invoke-RestMethod "https://api.github.com/repos/UB-Mannheim/tesseract/releases/latest" -Headers @{"User-Agent"="morph-build"}
+  $asset = $rel.assets | Where-Object { $_.name -like "*w64-setup*.exe" } | Select-Object -First 1
+  Get-File $asset.browser_download_url "$BUILD\tess-setup.exe"
+  $TS = "$BUILD\tesseract"
+  Start-Process "$BUILD\tess-setup.exe" -ArgumentList "/S", "/D=$TS" -Wait
+}
 if (-not (Test-Path "$TS\tesseract.exe")) { throw "Tesseract install failed" }
 Get-ChildItem $TS -File | Where-Object { $_.Extension -in ".exe", ".dll" } | Copy-Item -Destination "$ENG\bin\"
 Copy-Item "$TS\tessdata\eng.traineddata", "$TS\tessdata\osd.traineddata" "$ENG\tessdata\"

@@ -20,8 +20,6 @@ jobs:
         include:
           - runner: macos-15          # Apple Silicon
             file: Morph-mac-apple-silicon.dmg
-          - runner: macos-15-intel    # Intel Macs
-            file: Morph-mac-intel.dmg
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     steps:
@@ -97,7 +95,6 @@ jobs:
           | Download | For |
           |---|---|
           | **Morph-mac-apple-silicon.dmg** | Macs with M1–M4 chips (macOS 15 or newer) |
-          | **Morph-mac-intel.dmg** | Intel Macs (macOS 15 or newer) |
           | **Morph-windows-setup.exe** | Windows 10/11, 64-bit (installs for your user, no admin needed) |
 
           **First launch (the app isn't signed yet):**
