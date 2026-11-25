@@ -136,7 +136,7 @@ def main():
     st, h = a.get("/api/health")
     check("server is up", st == 200 and h.get("ok"), str(h)[:120])
     eng = h.get("engines", {}) if isinstance(h, dict) else {}
-    for k in ("libreoffice", "pandoc", "ffmpeg", "ghostscript", "tesseract"):
+    for k in ("libreoffice", "pandoc", "ffmpeg", "tesseract"):   # Ghostscript is optional (PyMuPDF compresses)
         check(f"engine: {k}", eng.get(k), "missing on server")
     if WEB:
         check("server runs in public mode", h.get("mode") == "web", h.get("mode"))

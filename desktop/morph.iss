@@ -20,8 +20,8 @@ OutputDir=..\dist
 OutputBaseFilename=Morph-windows-setup
 SetupIconFile=morph.ico
 UninstallDisplayIcon={app}\Morph.exe
-; strongest compression: LZMA2, solid archive, large dictionary
-Compression=lzma2/ultra64
+; LZMA2, solid archive (ultra64 needs more memory than the 32-bit compiler has)
+Compression=lzma2/max
 SolidCompression=yes
 LZMANumBlockThreads=4
 ArchitecturesAllowed=x64compatible

@@ -68,7 +68,7 @@ if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed" }
 Write-Host "==> Engines into the app folder"
 Copy-Item -Recurse $ENG "dist\Morph\engines"
 
-Write-Host "==> Installer (Inno Setup, LZMA2 ultra, solid)"
+Write-Host "==> Installer (Inno Setup, LZMA2 max, solid)"
 $ISCC = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
 if (-not (Test-Path $ISCC)) { choco install innosetup -y --no-progress | Out-Null }
 $ver = if ($env:GITHUB_REF_NAME -match '^v(\d+\.\d+\.\d+)') { $Matches[1] } else { "0.0.0" }
