@@ -1,4 +1,4 @@
-# Build the Morph desktop app for Windows -> dist\Morph-windows.zip
+# Build the Morph desktop app for Windows -> dist\Morph-windows-setup.exe (installer)
 # Runs on GitHub's windows-latest runner (Python 3.12 + pip deps installed by the workflow).
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
@@ -48,6 +48,9 @@ if ($p.ExitCode -ne 0) { throw "LibreOffice MSI extract failed ($($p.ExitCode))"
 $prog = (Get-ChildItem "$BUILD\lo" -Recurse -Filter soffice.exe | Select-Object -First 1).Directory.Parent.FullName
 Copy-Item -Recurse $prog "$ENG\LibreOffice"
 Write-Host "    LibreOffice $VER -> $ENG\LibreOffice"
+# drop what headless conversion never uses (help, dictionaries, icon themes, gallery, templates...)
+& "$env:ProgramFiles\Git\bin\bash.exe" ./desktop/trim_libreoffice.sh (($ENG -replace '\\','/') + "/LibreOffice")
+if ($LASTEXITCODE -ne 0) { throw "LibreOffice trim failed" }
 
 Write-Host "==> Python app (PyInstaller)"
 python -m PyInstaller --noconfirm --clean --windowed --name Morph `
@@ -58,15 +61,18 @@ python -m PyInstaller --noconfirm --clean --windowed --name Morph `
   --collect-all pymupdf --collect-all pymupdf4llm --collect-all pdf2docx --collect-all pillow_heif `
   --collect-submodules uvicorn --collect-all webview --collect-all clr_loader --collect-all pythonnet `
   --exclude-module tkinter --exclude-module matplotlib --exclude-module IPython `
+  --exclude-module pyarrow --exclude-module onnxruntime `
   "$ROOT\desktop\morph_desktop.py"
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed" }
 
 Write-Host "==> Engines into the app folder"
 Copy-Item -Recurse $ENG "dist\Morph\engines"
 
-Write-Host "==> Zip"
-$OUT = "dist\Morph-windows.zip"
-Remove-Item $OUT -ErrorAction SilentlyContinue
-& 7z a -tzip -mx=7 $OUT "dist\Morph" | Out-Null
-if ($LASTEXITCODE -ne 0) { throw "zip failed" }
+Write-Host "==> Installer (Inno Setup, LZMA2 ultra, solid)"
+$ISCC = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+if (-not (Test-Path $ISCC)) { choco install innosetup -y --no-progress | Out-Null }
+$ver = if ($env:GITHUB_REF_NAME -match '^v(\d+\.\d+\.\d+)') { $Matches[1] } else { "0.0.0" }
+& $ISCC "/DAppVersion=$ver" "desktop\morph.iss" | Out-Null
+if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed" }
+$OUT = "dist\Morph-windows-setup.exe"
 "{0:N0} MB  $OUT" -f ((Get-Item $OUT).Length / 1MB)

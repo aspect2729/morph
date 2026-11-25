@@ -20,6 +20,11 @@ import uuid
 import zipfile
 import zlib
 
+# Windows consoles default to a legacy code page that cannot print the ✓/→ characters used below
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except AttributeError:
+    pass
 BASE = (sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith("--") else "http://127.0.0.1:7788").rstrip("/")
 WEB = "--web" in sys.argv
 FAILS: list[str] = []

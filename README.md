@@ -59,3 +59,13 @@ See **DEPLOY.md** for the free Oracle Cloud setup (Docker + automatic HTTPS). Be
 deploy, run `python3 scripts/smoke_test.py <url> --web`.
 
 Live at **https://morphpdf.antideploy.app** (Antideploy). Update it with `deploy/antideploy.sh`.
+
+## Desktop app (macOS + Windows)
+
+Download from the website or [GitHub Releases](https://github.com/aspect2729/morph/releases/latest):
+`Morph-mac-apple-silicon.dmg`, `Morph-mac-intel.dmg` (macOS 15+), `Morph-windows-setup.exe` (Windows 10/11).
+Everything (LibreOffice, Tesseract, FFmpeg, Pandoc) is inside; it runs fully offline.
+
+- Code: `desktop/morph_desktop.py` (native window via pywebview, local engine on 127.0.0.1)
+- Build locally on a Mac: `PYTHON=.venv/bin/python desktop/build_mac.sh` → `dist/Morph-mac-*.dmg`
+- Releases: push a tag `vX.Y.Z` — `.github/workflows/desktop.yml` builds all three, smoke-tests each, publishes.

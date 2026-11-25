@@ -102,6 +102,12 @@ fetch('/api/health').then(r => r.json()).then(({engines, mode, limits = {}}) => 
   $('#status').classList.add('ok');
   $('#status span').textContent = mode === 'web' ? 'Private workspace' : 'On-device';
   if (mode !== 'web' && /Windows/.test(navigator.userAgent)) $('#wherenote b').textContent = 'on this PC';
+  if (mode === 'web') {   // offer the desktop app, the visitor's own system first
+    const ua = navigator.userAgent, os = /Windows/.test(ua) ? 'win' : /Mac/.test(ua) ? 'mac' : '';
+    const mine = $(`#getapp [data-os="${os}"]`);
+    if (mine) { mine.classList.add('mine'); mine.parentNode.prepend(mine); }
+    window.morphGetApp = true; $('#getapp').hidden = !!document.querySelector('#list .item');
+  }
   if (mode === 'web') {
     const h = limits.ttl_hours || 2, d = limits.library_days || 14;
     $('#wherenote').innerHTML = `Your files are <b>private to you</b> and deleted automatically.`;

@@ -48,6 +48,7 @@ function sync() {
   const n = items.length;
   $('#listwrap').hidden = !n;
   $('#features').hidden = n > 0;
+  if (window.morphGetApp) $('#getapp').hidden = n > 0;
   drop.classList.toggle('compact', n > 0);
   $('#count').textContent = `${String(n).padStart(2,'0')} ${n === 1 ? 'file' : 'files'}`;
   $('.drop-t').textContent = n ? 'Add more files' : TOUCH ? 'Tap to choose files' : 'Drop files, or click to choose';

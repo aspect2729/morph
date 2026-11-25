@@ -168,6 +168,18 @@ footer.eng{margin-top:56px;display:flex;justify-content:space-between;flex-wrap:
 footer.eng .e{display:flex;gap:14px;flex-wrap:wrap}
 footer.eng .e span::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--fg);margin-right:6px;vertical-align:1px}
 footer.eng .e span.off{opacity:.45}footer.eng .e span.off::before{background:var(--red)}
+/* desktop app downloads (web version only, computers only) */
+.getapp{margin-top:14px;padding:22px 24px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);
+  display:grid;grid-template-columns:1fr auto;gap:10px 24px;align-items:center}
+.getapp .ga-text .mono{color:var(--red);font-size:10px}
+.getapp h3{font-size:17px;font-weight:500;margin:6px 0 4px}
+.getapp p{font-size:13px;color:var(--dim);line-height:1.45}
+.ga-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.ga-btns .btn{text-decoration:none}
+.ga-btns .btn.mine{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.ga-note{grid-column:1/-1;font-size:9.5px !important;color:var(--mute) !important;letter-spacing:.06em}
+@media(max-width:720px){.getapp{display:none !important}}
+
 /* ---------- phones ---------- */
 @media(max-width:720px){
   /* top bar: logo · tabs · theme, nothing wraps */

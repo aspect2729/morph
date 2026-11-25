@@ -18,10 +18,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-14          # Apple Silicon; built on macOS 14 so it runs on 14+
-            zip: Morph-mac-apple-silicon.zip
+          - runner: macos-15          # Apple Silicon
+            file: Morph-mac-apple-silicon.dmg
           - runner: macos-15-intel    # Intel Macs
-            zip: Morph-mac-intel.zip
+            file: Morph-mac-intel.dmg
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     steps:
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - name: Engines (Homebrew)
-        run: brew install tesseract ffmpeg pandoc dylibbundler
+        run: brew install tesseract ffmpeg dylibbundler
       - name: Python packages
         run: |
           python -m pip install --upgrade pip
@@ -45,8 +45,8 @@ jobs:
           python scripts/smoke_test.py http://127.0.0.1:7788
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.zip }}
-          path: dist/${{ matrix.zip }}
+          name: ${{ matrix.file }}
+          path: dist/${{ matrix.file }}
           compression-level: 0
           retention-days: 7
 
@@ -74,8 +74,8 @@ jobs:
           python scripts/smoke_test.py http://127.0.0.1:7788
       - uses: actions/upload-artifact@v4
         with:
-          name: Morph-windows.zip
-          path: dist/Morph-windows.zip
+          name: Morph-windows-setup.exe
+          path: dist/Morph-windows-setup.exe
           compression-level: 0
           retention-days: 7
 
@@ -90,17 +90,17 @@ jobs:
         env: { GH_TOKEN: "${{ github.token }}" }
         run: |
           ls -la out
-          gh release create "${GITHUB_REF_NAME}" out/*.zip --repo "${GITHUB_REPOSITORY}" \
+          gh release create "${GITHUB_REF_NAME}" out/*.dmg out/*.exe --repo "${GITHUB_REPOSITORY}" \
             --title "Morph ${GITHUB_REF_NAME}" --notes-file - <<'EOF'
           Morph for your computer — convert anything and edit any PDF, entirely offline.
 
           | Download | For |
           |---|---|
-          | **Morph-mac-apple-silicon.zip** | Macs with M1/M2/M3/M4 chips (macOS 14 or newer) |
-          | **Morph-mac-intel.zip** | Intel Macs (macOS 15 or newer) |
-          | **Morph-windows.zip** | Windows 10/11, 64-bit |
+          | **Morph-mac-apple-silicon.dmg** | Macs with M1–M4 chips (macOS 15 or newer) |
+          | **Morph-mac-intel.dmg** | Intel Macs (macOS 15 or newer) |
+          | **Morph-windows-setup.exe** | Windows 10/11, 64-bit (installs for your user, no admin needed) |
 
           **First launch (the app isn't signed yet):**
-          - **Mac:** unzip, drag Morph to Applications, open it. If macOS says it can't be opened: System Settings → Privacy & Security → *Open Anyway*.
-          - **Windows:** unzip the whole folder, open `Morph.exe`. If SmartScreen appears: *More info* → *Run anyway*.
+          - **Mac:** open the .dmg, drag Morph into Applications, open it. If macOS says it can't be opened: System Settings → Privacy & Security → *Open Anyway*.
+          - **Windows:** run the setup. If SmartScreen appears: *More info* → *Run anyway*.
           EOF

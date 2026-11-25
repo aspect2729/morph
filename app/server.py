@@ -514,6 +514,34 @@ def pdf_save(request: Request, sid: str, req: SaveReq):
         _edit_err(e)
 
 
+# ---- desktop app downloads: /download/<mac|mac-intel|windows> -> latest GitHub release file
+_REPO = "https://github.com/aspect2729/morph"
+_DOWNLOADS = {"mac": "Morph-mac-apple-silicon.dmg", "mac-intel": "Morph-mac-intel.dmg",
+              "windows": "Morph-windows-setup.exe"}
+_dl_seen: dict[str, tuple[bool, float]] = {}
+
+
+@app.get("/download/{target}", include_in_schema=False)
+def download_app(target: str):
+    """Redirect to the newest release file; until one is published, to the releases page (never a 404)."""
+    from fastapi.responses import RedirectResponse
+    import urllib.request
+    name = _DOWNLOADS.get(target)
+    if not name:
+        raise HTTPException(404)
+    url = f"{_REPO}/releases/latest/download/{name}"
+    ok, t = _dl_seen.get(name, (False, 0.0))
+    if time.time() - t > (600 if ok else 60):          # re-check every 10 min (1 min while missing)
+        try:
+            r = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "morph-download-check"})
+            with urllib.request.urlopen(r, timeout=6) as resp:
+                ok = resp.status == 200
+        except Exception:
+            ok = False
+        _dl_seen[name] = (ok, time.time())
+    return RedirectResponse(url if ok else f"{_REPO}/releases", status_code=302)
+
+
 _ASSETS = ("app.css", "editor.css", "app.js", "convert.js", "editor.js")
 
 
